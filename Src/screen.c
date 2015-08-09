@@ -57,6 +57,9 @@ static const uint16_t  scr_addr_offset_list[] = {
     0x1000, 0x1020, 0x1040, 0x1060, 0x1080, 0x10a0, 0x10c0, 0x10e0,
 };
 
+extern void fill_speccy_char(uint16_t *lcd_screen_addr, byte *bit_addr, uint16_t set_color, uint16_t res_color);
+
+#define TEST_ASM
 void gen_speccy_screen(speccy_hadrware *speccy)
 {
 
@@ -68,7 +71,13 @@ void gen_speccy_screen(speccy_hadrware *speccy)
         for (int column = 0; column < 32; ++column) {
             uint16_t set_color = speccy_colors[*attr_addr % 0x0f];
             uint16_t res_color = speccy_colors[(*attr_addr >> 0x04)];
+#ifdef TEST_ASM
+            fill_speccy_char(lcd_screen_addr_tmp, scr_addr, set_color, res_color);
+            lcd_screen_addr_tmp += 192 * 8; /* 192 * 8 + 7 */
+            ++attr_addr;
+            ++scr_addr;
 
+#else
             fill_8_bits(lcd_screen_addr_tmp, *scr_addr, set_color, res_color);
             lcd_screen_addr_tmp--;
             scr_addr += 0x100;
@@ -93,9 +102,12 @@ void gen_speccy_screen(speccy_hadrware *speccy)
             fill_8_bits(lcd_screen_addr_tmp, *scr_addr, set_color, res_color);
             lcd_screen_addr_tmp--;
             /* сл. знакоместо */
+
             scr_addr -= 0x6ff;
-            lcd_screen_addr_tmp += 192 * 8+8; /* 192 * 8 + 7 */
+
+            lcd_screen_addr_tmp += 192 * 8 + 7; /* 192 * 8 + 7 */
             ++attr_addr;
+#endif
         }
     }
 }

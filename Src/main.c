@@ -76,10 +76,11 @@ static void Error_Handler(void);
 
 extern void form_speccy_screen_asm();
 extern uint32_t add_asm(uint16_t one, uint16_t two);
+
+
 int main(void)
 {
-    uint16_t x1111 = add_asm(44, 478);
-    form_speccy_screen_asm();
+    //form_speccy_screen_asm();
     /* USER CODE BEGIN 1 */
 
     /* USER CODE END 1 */
@@ -100,6 +101,11 @@ int main(void)
     //HAL_LTDC_SetWindowPosition(&LtdcHandle, 0, 0, 1);
 
     /* USER CODE BEGIN 2 */
+    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+    DWT->CYCCNT = 0;
+
+    memset((void*)SCREEN_BUFFER_ADDR, 0, 192 * 256 * 2);
+
 
     speccy_hadrware speccy;
     init_speccy_hardware(&speccy);
@@ -114,16 +120,18 @@ int main(void)
     uint16_t *addr = 0;
     print_num("addr: ", (uintptr_t)addr++);
     print_num("addr: ", (uintptr_t)addr);
-    memset((void*)SCREEN_BUFFER_ADDR, 0, 192 * 256 * 2);
 
     int x = 50;
     uint16_t pattern = 0;
+
+    DWT->CTRL |= 1;
     while (1)
     {
 
         /* USER CODE END WHILE */
         int tick = HAL_GetTick();
         uint32_t tt = SysTick->VAL;
+        DWT->CYCCNT = 0;
 
         LtdcHandle.Init.Backcolor.Blue += 1;
         LtdcHandle.Init.Backcolor.Red += 1;
@@ -143,9 +151,10 @@ int main(void)
         tick = HAL_GetTick() - tick;
 
         if (--x < 0){
-            //print_num("start systick: ", tt);
-            //print_num("end systick: ", tt2);
-            //print_num("ms: ", tick);
+            print_num("cycle count:", DWT->CYCCNT);
+            print_num("start systick: ", tt);
+            print_num("end systick: ", tt2);
+            print_num("ms: ", tick);
             x = 50;
         }
 

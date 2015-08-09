@@ -51,7 +51,8 @@ Product {
         "-Waggregate-return",
         "-Wfloat-equal",
         "-MMD",
-        "-MP"
+        "-MP",
+        "-g",
     ]
 
     cpp.includePaths: [
