@@ -16,79 +16,61 @@ lines_addr:
     @r2 set color
     @r3 res color
     ldrb r4,[r1]
-    tst r4, #0x80
+
     @eq:  z=1, выключено
-    it eq
-    beq 1f
     mov r5, r2
-    b 2f
-1:  mov r5, r3
-2:  strh r5, [r0, #0]
+    it eq
+    moveq r5, r3
+    strh r5, [r0, #0]
 
     tst r4, #0x40
     @eq:  z=1, выключено
-    it eq
-    beq 1f
     mov r5, r2
-    b 2f
-1:  mov r5, r3
-2:  strh r5, [r0, #0x0180]
+    it eq
+    moveq r5, r3
+    strh r5, [r0, #0x0180]
 
     tst r4, #0x20
     @eq:  z=1, выключено
-    it eq
-    beq 1f
     mov r5, r2
-    b 2f
-1:  mov r5, r3
-2:  strh r5, [r0, #0x0300]
+    it eq
+    moveq r5, r3
+    strh r5, [r0, #0x0300]
 
     tst r4, #0x10
     @eq:  z=1, выключено
-    it eq
-    beq 1f
     mov r5, r2
-    b 2f
-1:  mov r5, r3
-2:  strh r5, [r0, #0x0480]
+    it eq
+    moveq r5, r3
+    strh r5, [r0, #0x0480]
 
     tst r4, #0x08
     @nq:  z=1, выключено
-    it eq
-    beq 1f
     mov r5, r2
-    b 2f
-1:  mov r5, r3
-2:  strh r5, [r0, #0x0600]
+    it eq
+    moveq r5, r3
+    strh r5, [r0, #0x0600]
 
     tst r4, #0x04
     @nq:  z=1, выключено
-    it eq
-    beq 1f
     mov r5, r2
-    b 2f
-1:  mov r5, r3
-2:  strh r5, [r0, #0x780]
+    it eq
+    moveq r5, r3
+    strh r5, [r0, #0x780]
 
     tst r4, #0x02
     @eq:  z=1, выключено
-    it eq
-    beq 1f
     mov r5, r2
-    b 2f
-1:  mov r5, r3
-2:  strh r5, [r0, #0x900]
+    it eq
+    moveq r5, r3
+    strh r5, [r0, #0x900]
 
     tst r4, #0x01
     @eq:  z=1, выключено
-    it eq
-    beq 1f
     mov r5, r2
-    b 2f
-1:  mov r5, r3
-2:  strh r5, [r0, #0x0a80]
-
-
+    it eq
+    moveq r5, r3
+    strh r5, [r0, #0x0a80]
 .endm
 
 
@@ -106,15 +88,45 @@ form_speccy_screen_asm:
     add r3, r1, r3
     add r0, r0, #191
 
-    fill_8_bits_m
 
+    fill_8_bits_m
 
     nop
     bx lr
 
+.macro down_hl_m addr=r0, temp_reg=r1
+
+    add \addr, #0x0100
+    tst \addr, #0x0700
+    bne 1f
+    mov \temp_reg, \addr
+    add \addr, \addr, #0x20
+    and \temp_reg, \temp_reg, #0xff
+    add \temp_reg, #0x20
+    cmp \temp_reg, #0x100
+    bcs 1f
+    sub \addr, \addr, 0x0800
+1:
+.endm
+
+.global line_addr
+.type line_addr, %function
+line_addr:
+    mov r2, r0
+    and r2, r2, #0xc0
+
+    and r1, r0, #0x07
+    lsl r1, r1, #0x03
+
+    lsr r0, r0, #0x03
+    and r0, r0, #0x07
+    orr r0, r0, r1
+    orr r0, r0, r2
+
 .global add_asm
 .type add_asm, %function
 add_asm:
+    down_hl_m r0, r1
     add r0, r0, r1
     bx lr
 
@@ -128,6 +140,7 @@ fill_speccy_char:
     @r3 = res color
     @ldr r2, =#0xc0c0
     @mov r3,r2
+    ldr r5, =main
 
     push {r0-r5}
 

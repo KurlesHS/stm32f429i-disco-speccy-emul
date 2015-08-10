@@ -77,9 +77,17 @@ static void Error_Handler(void);
 extern void form_speccy_screen_asm();
 extern uint32_t add_asm(uint16_t one, uint16_t two);
 
+uint16_t addr_check(register uint16_t row)
+{
+    return (row & 0b00000011) | ((row & 7) <<3 ) | ((row >> 3)& 7);
+}
 
 int main(void)
 {
+    for (int r = 0; r < 12; ++r){
+        register uint16_t addr2 = addr_check(r);
+        DWT->COMP0 = addr2;
+    }
     //form_speccy_screen_asm();
     /* USER CODE BEGIN 1 */
 
@@ -89,6 +97,9 @@ int main(void)
 
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
+    for (int r = 66; r < 77; ++r){
+        DWT->CPICNT = addr_check(r);
+    }
 
     /* Configure the system clock */
     SystemClock_Config();
@@ -124,7 +135,7 @@ int main(void)
     int x = 50;
     uint16_t pattern = 0;
 
-    DWT->CTRL |= 1;
+    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
     while (1)
     {
 
