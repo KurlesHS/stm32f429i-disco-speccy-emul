@@ -82,12 +82,10 @@ uint16_t addr_check(register uint16_t row)
     return (row & 0b00000011) | ((row & 7) <<3 ) | ((row >> 3)& 7);
 }
 
+extern void update_screen(uint16_t *video_buffer, uint8_t *speccy_screen);
+
 int main(void)
 {
-    for (int r = 0; r < 12; ++r){
-        register uint16_t addr2 = addr_check(r);
-        DWT->COMP0 = addr2;
-    }
     //form_speccy_screen_asm();
     /* USER CODE BEGIN 1 */
 
@@ -96,10 +94,10 @@ int main(void)
     /* MCU Configuration----------------------------------------------------------*/
 
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+
+
     HAL_Init();
-    for (int r = 66; r < 77; ++r){
-        DWT->CPICNT = addr_check(r);
-    }
+
 
     /* Configure the system clock */
     SystemClock_Config();
@@ -120,6 +118,9 @@ int main(void)
 
     speccy_hadrware speccy;
     init_speccy_hardware(&speccy);
+    update_screen((uint16_t*)SCREEN_BUFFER_ADDR, speccy.z80_screen_addr);
+
+
 
     /* USER CODE END 2 */
 
